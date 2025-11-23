@@ -2,14 +2,15 @@ import mysql from 'mysql2/promise';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
 
+
 // MySQL Connection Pool
 export const createMySQLPool = () => {
   const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '3306'),
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME || 'unite_db',
+    password: process.env.DB_PASSWORD || 'Nishant@123',
+    database: process.env.DB_NAME,
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10'),
     waitForConnections: true,
     queueLimit: 0,
@@ -37,31 +38,31 @@ export const mysqlPool = createMySQLPool();
 
 
 export const connectMongoDB = async () => {
-    try {
-        const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/unite';
-    
-        await mongoose.connect(mongoUri, {
-            dbName: process.env.MONGODB_DB_NAME || 'unite_logs',
-            maxPoolSize: 10,
-            serverSelectionTimeoutMS: 5000,
-            socketTimeoutMS: 45000,
-        });
+  try {
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/unite';
 
-        logger.info('MongoDB connected successfully');
+    await mongoose.connect(mongoUri, {
+      dbName: process.env.MONGODB_DB_NAME || 'unite_logs',
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
 
-        mongoose.connection.on('error', (err) => {
-            logger.error('MongoDB connection error:', err);
-        });
+    logger.info('MongoDB connected successfully');
 
-        mongoose.connection.on('disconnected', () => {
-            logger.warn('MongoDB disconnected');
-        });
+    mongoose.connection.on('error', (err) => {
+      logger.error('MongoDB connection error:', err);
+    });
 
-        return mongoose.connection;
-    } catch (error) {
-        logger.error('MongoDB connection failed:', error);
-        throw error;
-    }
+    mongoose.connection.on('disconnected', () => {
+      logger.warn('MongoDB disconnected');
+    });
+
+    return mongoose.connection;
+  } catch (error) {
+    logger.error('MongoDB connection failed:', error);
+    throw error;
+  }
 }
 
 export const closeDatabaseConnections = async () => {

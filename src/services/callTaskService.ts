@@ -19,7 +19,7 @@ export class CallTaskService {
     agent_id: number;
     scheduled_at?: Date;
     idempotency_key?: string;
-  }): Promise<ICallTask> {  // ✅ Fixed
+  }): Promise<ICallTask> {
     // Validate lead exists
     const lead = await LeadModel.findById(data.lead_id);
     if (!lead) {
@@ -157,7 +157,7 @@ export class CallTaskService {
   static async getAgentTasks(
     agentId: number,
     status?: CallTaskStatus
-  ): Promise<ICallTask[]> {  // ✅ Fixed
+  ): Promise<ICallTask[]> {
     const cacheKey = `call_tasks:agent:${agentId}:${status || 'all'}`;
     const cached = await cacheService.get(cacheKey);
     if (cached) {

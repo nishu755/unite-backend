@@ -23,9 +23,9 @@ const CallLogSchema = new Schema(
     call_task_id: { type: Number, required: true, index: true },
     lead_id: { type: Number, required: true, index: true },
     agent_id: { type: Number, required: true, index: true },
-    status: { 
-      type: String, 
-      enum: ['pending', 'completed', 'missed'], 
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'missed'],
       required: true,
       index: true
     },
@@ -34,9 +34,10 @@ const CallLogSchema = new Schema(
     duration_seconds: { type: Number },
     recording_url: { type: String },
     metadata: {
+      scheduled_at: { type: Date },
+      completed_at: { type: Date },
       ip_address: { type: String },
-      user_agent: { type: String },
-      device: { type: String }
+      user_agent: { type: String }
     },
     created_at: { type: Date, default: Date.now, index: true }
   },

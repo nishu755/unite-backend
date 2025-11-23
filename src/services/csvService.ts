@@ -91,8 +91,7 @@ export class CsvService {
       // Download CSV from S3 via signed URL
       const downloadUrl = await S3Service.generateDownloadUrl(AWS_CONFIG.S3_BUCKET_CSV, s3Key);
 
-      // NOTE: In Node.js you may need a fetch polyfill (node >=18 has global fetch).
-      // If you run older Node, install node-fetch and import it.
+
       const res = await fetch(downloadUrl);
       if (!res.ok) throw new Error(`Failed to download CSV: ${res.status} ${res.statusText}`);
       const csvContent = await res.text();
