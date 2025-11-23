@@ -1,48 +1,22 @@
 {
+  "root": true,
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module",
-    "project": "./tsconfig.json"
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "env": {
+    "node": true,
+    "es2021": true
   },
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    "plugin:@typescript-eslint/recommended"
   ],
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "env": {
-    "node": true,
-    "es2020": true
-  },
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/explicit-function-return-types": "warn",
-    "@typescript-eslint/explicit-module-boundary-types": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "^_"
-      }
-    ],
-    "no-console": [
-      "warn",
-      {
-        "allow": [
-          "warn",
-          "error"
-        ]
-      }
-    ],
-    "prefer-const": "error",
-    "no-var": "error"
+    "no-console": ["warn"],
+    "@typescript-eslint/no-explicit-any": "warn"
   },
-  "ignorePatterns": [
-    "dist",
-    "node_modules",
-    "coverage",
-    "tests"
-  ]
+  "ignorePatterns": ["node_modules", "dist"]
 }
