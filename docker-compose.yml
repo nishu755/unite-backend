@@ -1,0 +1,173 @@
+version: '3.9'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: unite-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: unite_db
+      MYSQL_USER: unite_user
+      MYSQL_PASSWORD: unite_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/script/init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unite-network
+    restart: unless-stopped
+
+  # MongoDB
+  mongodb:
+    image: mongo:6.0
+    container_name: unite-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin_password
+      MONGO_INITDB_DATABASE: unite_logs
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/unite_logs -u admin -p admin_password --authenticationDatabase admin
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unite-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: unite-redis
+    command: redis-server --requirepass redis_password --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unite-network
+    restart: unless-stopped
+
+  # Node.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unite-backend
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: unite_user
+      DB_PASSWORD: unite_password
+      DB_NAME: unite_db
+      DB_CONNECTION_LIMIT: 10
+      MONGODB_URI: mongodb://admin:admin_password@mongodb:27017/unite_logs?authSource=admin
+      MONGODB_DB_NAME: unite_logs
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password
+      REDIS_DB: 0
+      JWT_SECRET: dev-secret-key-minimum-32-characters-long
+      JWT_REFRESH_SECRET: dev-refresh-secret-key-minimum-32-characters
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      S3_BUCKET_IMAGES: unite-images-dev
+      S3_BUCKET_CSV: unite-csv-dev
+      SNS_TOPIC_ARN: ${SNS_TOPIC_ARN}
+      SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+      SENTRY_DSN: ""
+      CORS_ORIGIN: http://localhost:3000,http://localhost:3001
+      RATE_LIMIT_MAX_REQUESTS: 100
+      RATE_LIMIT_WINDOW_MS: 900000
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - unite-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # CSV Processing Worker
+  csv-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unite-csv-worker
+    command: node dist/workers/csvProcessor.js
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: unite_user
+      DB_PASSWORD: unite_password
+      DB_NAME: unite_db
+      MONGODB_URI: mongodb://admin:admin_password@mongodb:27017/unite_logs?authSource=admin
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_password
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      S3_BUCKET_CSV: unite-csv-dev
+      SQS_QUEUE_URL: ${SQS_QUEUE_URL}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - unite-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  unite-network:
+    driver: bridge

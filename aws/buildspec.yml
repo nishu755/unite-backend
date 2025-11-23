@@ -1,0 +1,59 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/unite-backend
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo "Installing dependencies..."
+      - npm ci
+
+  install:
+    commands:
+      - echo "Installing Node.js and npm..."
+      - node --version
+      - npm --version
+
+  build:
+    commands:
+      - echo "Building application..."
+      - npm run build
+      - echo "Running linter..."
+      - npm run lint || true
+      - echo "Running tests..."
+      - npm run test:cov || true
+      - echo "Building Docker image on `date`"
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo "Pushing Docker image to ECR..."
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"unite-backend","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
+    - coverage/lcov-report/**/*
+  name: BuildArtifact
+
+cache:
+  paths:
+    - '/root/.npm/**/*'
+    - 'node_modules/**/*'
+
+reports:
+  UnitTests:
+    files:
+      - coverage/cobertura-coverage.xml
+    file-format: 'COBERTURAXML'
+  CodeCoverage:
+    files:
+      - coverage/lcov.info
+    file-format: 'CLOVERXML'

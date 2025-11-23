@@ -2,7 +2,6 @@ import { Response } from 'express';
 import { AuthRequest, CallTaskStatus, UserRole } from '../types';
 import { CallTaskService } from '../services/callTaskService';
 import { ApiResponse } from '../types';
-import { ForbiddenError } from '../utils/errors';
 import logger from '../utils/logger';
 
 export class CallTaskController {
@@ -10,8 +9,9 @@ export class CallTaskController {
    * Create new call task
    * POST /api/call-tasks
    */
-  static async create(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async create(req: AuthRequest, res: Response): Promise<any | object> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const task = await CallTaskService.createCallTask(req.body);
 
       const response: ApiResponse = {
@@ -22,7 +22,7 @@ export class CallTaskController {
       };
 
       res.status(201).json(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Create call task error:', error);
       throw error;
     }
@@ -32,10 +32,11 @@ export class CallTaskController {
    * Complete call task
    * POST /api/call-tasks/:id/complete
    */
-  static async complete(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async complete(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const taskId = parseInt(req.params.id);
       const agentId = req.user!.id;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { notes, outcome } = req.body;
 
       const task = await CallTaskService.completeCallTask(
@@ -63,7 +64,7 @@ export class CallTaskController {
    * Mark task as missed
    * POST /api/call-tasks/:id/missed
    */
-  static async markAsMissed(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async markAsMissed(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const taskId = parseInt(req.params.id);
 
@@ -87,7 +88,7 @@ export class CallTaskController {
    * Get agent's tasks
    * GET /api/call-tasks/my-tasks
    */
-  static async getMyTasks(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async getMyTasks(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const agentId = req.user!.id;
       const { status } = req.query;
@@ -104,7 +105,7 @@ export class CallTaskController {
       };
 
       res.status(200).json(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get my tasks error:', error);
       throw error;
     }
@@ -114,7 +115,7 @@ export class CallTaskController {
    * Get pending tasks
    * GET /api/call-tasks/pending
    */
-  static async getPending(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async getPending(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const agentId = req.user!.id;
 
@@ -137,7 +138,7 @@ export class CallTaskController {
    * Get overdue tasks (admin/manager only)
    * GET /api/call-tasks/overdue
    */
-  static async getOverdue(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async getOverdue(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       // Only admin and manager can see all overdue tasks
       if (req.user!.role === UserRole.AGENT) {
@@ -170,7 +171,7 @@ export class CallTaskController {
    * Get task details
    * GET /api/call-tasks/:id
    */
-  static async getById(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async getById(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const taskId = parseInt(req.params.id);
 
@@ -193,11 +194,12 @@ export class CallTaskController {
    * Get agent task statistics
    * GET /api/call-tasks/stats/:agentId
    */
-  static async getAgentStats(req: AuthRequest, res: Response): Promise<any | Object> {
+  static async getAgentStats(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const agentId = parseInt(req.params.agentId);
       const { startDate, endDate } = req.query;
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const stats = await CallTaskService.getAgentTaskStats(
         agentId,
         startDate as string,
@@ -206,12 +208,13 @@ export class CallTaskController {
 
       const response: ApiResponse = {
         success: true,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         data: stats,
         correlationId: req.correlationId
       };
 
       res.status(200).json(response);
-    } catch (error: any) {
+    } catch (error: unknown) {
       logger.error('Get agent stats error:', error);
       throw error;
     }

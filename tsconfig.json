@@ -10,20 +10,17 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
-    "types": ["node", "jest"],
-    "baseUrl": "./src",
-    "paths": {
-      "@config/*": ["config/*"],
-      "@models/*": ["models/*"],
-      "@controllers/*": ["controllers/*"],
-      "@services/*": ["services/*"],
-      "@middlewares/*": ["middlewares/*"],
-      "@utils/*": ["utils/*"],
-      "@types/*": ["types/*"]
-    }
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist", "tests"]
 }

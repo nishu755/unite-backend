@@ -1,0 +1,81 @@
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
+  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  moduleFileExtensions: ['ts', 'js', 'json'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/server.ts',
+    '!src/script/**',
+    '!src/workers/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
+  },
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    'test.ts',
+  ],
+  testTimeout: 30000,
+  verbose: true,
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      },
+    },
+  },
+};module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
+  testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  moduleFileExtensions: ['ts', 'js', 'json'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/server.ts',
+    '!src/script/**',
+    '!src/workers/**',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 75,
+      lines: 75,
+      statements: 75,
+    },
+  },
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    'test.ts',
+  ],
+  testTimeout: 30000,
+  verbose: true,
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+      },
+    },
+  },
+};

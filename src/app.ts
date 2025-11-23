@@ -9,7 +9,6 @@ import routes from './routes';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import { requestLogger, performanceMonitor } from './middlewares/logger';
 import { rateLimitMiddleware } from './middlewares/rateLimiter';
-import logger from './utils/logger';
 
 // Ensure NODE_ENV has a value in runtime (TS no-op)
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
@@ -67,11 +66,11 @@ if (NODE_ENV !== 'production') {
 app.use(requestLogger);
 app.use(performanceMonitor);
 
-// Rate limiting (ensure rateLimitMiddleware is exported as RequestHandler)
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.use(rateLimitMiddleware);
 
 // Health check
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -84,7 +83,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api', routes);
 
 // Root
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.json({
     message: 'Unite Backend API',
     version: '1.0.0',
