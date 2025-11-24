@@ -9,7 +9,7 @@ export const errorHandler = (
     error: Error | AppError,
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ): void => {
 
     logger.error('Error:', {
@@ -87,7 +87,7 @@ export const errorHandler = (
 export const notFoundHandler = (
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ): void => {
     const response: ApiResponse = {
         success: false,

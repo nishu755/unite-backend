@@ -6,7 +6,7 @@ import logger from '../utils/logger';
 
 export class ReportController {
 
-    static async getDailySummary(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getDailySummary(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const { date } = req.query;
 
@@ -31,7 +31,7 @@ export class ReportController {
     }
 
 
-    static async getAgentPerformance(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getAgentPerformance(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const agentId = parseInt(req.params.agentId);
             const { startDate, endDate } = req.query;
@@ -62,7 +62,7 @@ export class ReportController {
     }
 
 
-    static async getTeamPerformance(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getTeamPerformance(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const { startDate, endDate } = req.query;
 
@@ -89,7 +89,7 @@ export class ReportController {
         }
     }
 
-    static async getCallVolumeTrends(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getCallVolumeTrends(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const trends = await ReportService.getCallVolumeTrends();
 

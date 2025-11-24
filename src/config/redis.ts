@@ -1,5 +1,6 @@
 import Redis from 'ioredis';
 import logger from '../utils/logger';
+import 'dotenv/config';
 
 const redisConfig = {
   host: process.env.REDIS_HOST || 'localhost',

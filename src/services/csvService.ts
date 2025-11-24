@@ -44,7 +44,7 @@ export class CsvService {
 
     // Upload to S3
     const fileName = file.originalname;
-    const { uploadUrl, key } = await S3Service.generateCsvUploadUrl(fileName);
+    const { key } = await S3Service.generateCsvUploadUrl(fileName);
 
     // Upload buffer directly (server-side)
     await S3Service.uploadBuffer(file.buffer, key, 'text/csv', AWS_CONFIG.S3_BUCKET_CSV);

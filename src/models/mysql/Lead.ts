@@ -1,6 +1,7 @@
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { mysqlPool } from '../../config/database';
 import { ILead, LeadStatus, LeadFilters, PaginationParams } from '../../types';
+import logger from '../../utils/logger';
 
 export class LeadModel {
     /**
@@ -112,44 +113,55 @@ export class LeadModel {
         filters: LeadFilters,
         pagination: PaginationParams
     ): Promise<{ leads: ILead[]; total: number }> {
-        let query = 'SELECT * FROM leads WHERE 1=1';
+        const whereParts: string[] = [];
         const params: any[] = [];
-        const countParams: any[] = [];
 
         if (filters.status) {
-            query += ' AND status = ?';
+            whereParts.push('status = ?');
             params.push(filters.status);
-            countParams.push(filters.status);
         }
-
         if (filters.source) {
-            query += ' AND source = ?';
+            whereParts.push('source = ?');
             params.push(filters.source);
-            countParams.push(filters.source);
         }
-
         if (filters.assigned_to) {
-            query += ' AND assigned_to = ?';
+            whereParts.push('assigned_to = ?');
             params.push(filters.assigned_to);
-            countParams.push(filters.assigned_to);
         }
 
-        // Get total count
-        const countQuery = query.replace('SELECT *', 'SELECT COUNT(*) as total');
-        const [countRows] = await mysqlPool.execute<RowDataPacket[]>(countQuery, countParams);
-        const total = countRows[0].total as number;
+        const whereClause = whereParts.length > 0 ? 'WHERE ' + whereParts.join(' AND ') : '';
 
-        // Get paginated results
-        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        params.push(pagination.limit, pagination.offset);
+        // Coerce pagination values to integers and validate
+        const limit = Math.floor(Number(pagination.limit ?? 20));
+        const offset = Math.floor(Number(pagination.offset ?? 0));
 
-        const [rows] = await mysqlPool.execute<RowDataPacket[]>(query, params);
+        if (limit < 0) {
+            throw new Error('Invalid pagination.limit (must be a non-negative integer)');
+        }
+        if (offset < 0) {
+            throw new Error('Invalid pagination.offset (must be a non-negative integer)');
+        }
+
+        // Get total
+        const countQuery = `SELECT COUNT(*) as total FROM leads ${whereClause}`;
+        const [countRows] = await mysqlPool.execute<RowDataPacket[]>(countQuery, params);
+        const total = Number((countRows[0] as any).total) || 0;
+
+        // IMPORTANT: LIMIT and OFFSET must be in the SQL string, NOT as ? parameters
+        const dataQuery = `SELECT * FROM leads ${whereClause} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+        logger.debug('Lead.findAll - dataQuery', { dataQuery });
+        logger.debug('Lead.findAll - params', params.map((p, i) => ({ index: i, value: p, type: typeof p })));
+
+        // Execute - only filter params go to the prepared statement
+        const [rows] = await mysqlPool.execute<RowDataPacket[]>(dataQuery, params);
 
         return {
             leads: rows as ILead[],
             total,
         };
     }
+
 
     /**
      * Bulk create leads (for CSV import)
@@ -264,13 +276,25 @@ export class LeadModel {
      * Search leads by name, phone, or email
      */
     static async search(searchTerm: string, limit: number = 20): Promise<ILead[]> {
+        // Validate and coerce limit to integer
+        const validLimit = Math.floor(Number(limit ?? 20));
+
+        if (validLimit < 0) {
+            throw new Error('Invalid limit (must be a non-negative integer)');
+        }
+
         const searchPattern = `%${searchTerm}%`;
+
+        // IMPORTANT: LIMIT must be in the SQL string, NOT as a ? parameter
+        const query = `SELECT * FROM leads 
+        WHERE name LIKE ? OR phone LIKE ? OR email LIKE ? 
+        ORDER BY created_at DESC LIMIT ${validLimit}`;
+
         const [rows] = await mysqlPool.execute<RowDataPacket[]>(
-            `SELECT * FROM leads 
-       WHERE name LIKE ? OR phone LIKE ? OR email LIKE ? 
-       ORDER BY created_at DESC LIMIT ?`,
-            [searchPattern, searchPattern, searchPattern, limit]
+            query,
+            [searchPattern, searchPattern, searchPattern]
         );
+
         return rows as ILead[];
     }
 

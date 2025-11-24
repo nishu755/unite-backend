@@ -66,7 +66,7 @@ if (NODE_ENV !== 'production') {
 app.use(requestLogger);
 app.use(performanceMonitor);
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
+ 
 app.use(rateLimitMiddleware);
 
 // Health check

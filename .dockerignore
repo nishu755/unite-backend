@@ -1,6 +1,5 @@
 node_modules
 npm-debug.log
-dist
 .git
 .gitignore
 .github
@@ -11,8 +10,6 @@ dist
 README.md
 ARCHITECTURE.md
 DEPLOYMENT.md
-docker-compose.yml
-Dockerfile
 .dockerignore
 .vscode
 .idea
@@ -29,7 +26,4 @@ docs
 .prettierignore
 .prettierrc
 jest.config.js
-tsconfig.json
-src/script
-src/workers
 yarn.lock

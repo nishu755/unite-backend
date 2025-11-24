@@ -6,7 +6,7 @@ import logger from '../utils/logger';
 
 export class LeadController {
    
-    static async create(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async create(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const lead = await LeadService.createLead(req.body);
 
@@ -23,7 +23,7 @@ export class LeadController {
             throw error;
         }
     }
-    static async getById(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getById(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const leadId = parseInt(req.params.id);
             const lead = await LeadService.getLeadById(leadId);
@@ -41,7 +41,7 @@ export class LeadController {
         }
     }
 
-    static async getAll(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getAll(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const { status, source, assigned_to, page = 1, limit = 20 } = req.query;
 
@@ -69,7 +69,7 @@ export class LeadController {
             throw error;
         }
     }
-    static async update(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async update(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const leadId = parseInt(req.params.id);
             const lead = await LeadService.updateLead(leadId, req.body);
@@ -89,7 +89,7 @@ export class LeadController {
     }
 
 
-    static async delete(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async delete(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const leadId = parseInt(req.params.id);
             await LeadService.deleteLead(leadId);
@@ -108,7 +108,7 @@ export class LeadController {
     }
 
   
-    static async assign(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async assign(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const leadId = parseInt(req.params.id);
             const { agent_id } = req.body;
@@ -130,7 +130,7 @@ export class LeadController {
     }
 
     
-    static async search(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async search(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const { q, limit = 20 } = req.query;
 
@@ -153,7 +153,7 @@ export class LeadController {
     }
 
 
-    static async getStats(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getStats(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const stats = await LeadService.getLeadStats();
 
@@ -170,7 +170,7 @@ export class LeadController {
         }
     }
 
-    static async getImageUploadUrl(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getImageUploadUrl(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const { fileName, fileType } = req.body;
 

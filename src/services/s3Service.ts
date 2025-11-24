@@ -19,11 +19,7 @@ type CsvUploadResult = {
  * S3 helper service
  */
 export class S3Service {
-  /**
-   * Generate pre-signed URL for image upload
-   * @param fileName original file name (for logging/optional use)
-   * @param fileType mime type (e.g. "image/png")
-   */
+
   static async generateImageUploadUrl(
     fileName: string,
     fileType: string

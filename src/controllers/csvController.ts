@@ -6,7 +6,7 @@ import logger from '../utils/logger';
 
 export class CsvController {
 
-    static async upload(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async upload(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             if (!req.file) {
                 res.status(400).json({
@@ -34,7 +34,7 @@ export class CsvController {
         }
     }
 
-    static async getStatus(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getStatus(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const csvLogId = req.params.id;
             const status = await CsvService.getCsvStatus(csvLogId);
@@ -52,7 +52,7 @@ export class CsvController {
         }
     }
 
-    static async getHistory(req: AuthRequest, res: Response): Promise<any | Object> {
+    static async getHistory(req: AuthRequest, res: Response): Promise<any | object> {
         try {
             const userId = req.user!.id;
             const { limit = 10 } = req.query;

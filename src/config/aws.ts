@@ -2,6 +2,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { SNSClient } from '@aws-sdk/client-sns';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import logger from '../utils/logger';
+import 'dotenv/config';
 
 const awsConfig = {
   region: process.env.AWS_REGION || 'us-east-1',

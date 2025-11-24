@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS unite_db;
+init-mysql.sqlCREATE DATABASE IF NOT EXISTS unite_db;
 USE unite_db;
 
-
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -15,8 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   INDEX idx_role (role)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-
+-- Leads table
 CREATE TABLE IF NOT EXISTS leads (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
@@ -36,6 +35,7 @@ CREATE TABLE IF NOT EXISTS leads (
   INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Call tasks table
 CREATE TABLE IF NOT EXISTS call_tasks (
   id INT PRIMARY KEY AUTO_INCREMENT,
   lead_id INT NOT NULL,
@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS call_tasks (
   INDEX idx_idempotency (idempotency_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Refresh tokens table
 CREATE TABLE IF NOT EXISTS refresh_tokens (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
@@ -69,6 +70,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Insert default admin user (password: Admin@123)
 INSERT INTO users (email, password_hash, role, phone) 
 VALUES (
   'admin@unite.com',
@@ -76,5 +78,57 @@ VALUES (
   'admin',
   '+1234567890'
 ) ON DUPLICATE KEY UPDATE email=email;
+```
 
--- admin user (password: Admin@123)
+### src/models/mysql/User.ts
+```typescript
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { mysqlPool } from '../../config/database';
+import { IUser, UserRole } from '../../types';
+import bcrypt from 'bcryptjs';
+
+export class UserModel {
+  static async create(email: string, password: string, role: UserRole, phone?: string): Promise {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await mysqlPool.execute(
+      'INSERT INTO users (email, password_hash, role, phone) VALUES (?, ?, ?, ?)',
+      [email, hashedPassword, role, phone]
+    );
+    return result.insertId;
+  }
+
+  static async findByEmail(email: string): Promise {
+    const [rows] = await mysqlPool.execute(
+      'SELECT * FROM users WHERE email = ? AND is_active = TRUE',
+      [email]
+    );
+    return rows.length > 0 ? (rows[0] as IUser) : null;
+  }
+
+  static async findById(id: number): Promise {
+    const [rows] = await mysqlPool.execute(
+      'SELECT * FROM users WHERE id = ? AND is_active = TRUE',
+      [id]
+    );
+    return rows.length > 0 ? (rows[0] as IUser) : null;
+  }
+
+  static async verifyPassword(plainPassword: string, hashedPassword: string): Promise {
+    return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  static async updateLastLogin(userId: number): Promise {
+    await mysqlPool.execute(
+      'UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [userId]
+    );
+  }
+
+  static async findAgents(): Promise {
+    const [rows] = await mysqlPool.execute(
+      'SELECT id, email, phone, role FROM users WHERE role = ? AND is_active = TRUE',
+      [UserRole.AGENT]
+    );
+    return rows as IUser[];
+  }
+}

@@ -5,7 +5,7 @@ import { AuthService } from '../services/authService';
 import { UnauthorizedError } from '../utils/errors';
 import logger from '../utils/logger';
 
-export const authenticate: RequestHandler = async (req, res, next) => {
+export const authenticate: RequestHandler = async (req, _res, next) => {
   const authReq = req as AuthRequest;
 
   try {
@@ -34,7 +34,7 @@ export const authenticate: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const optionalAuth: RequestHandler = async (req, res, next) => {
+export const optionalAuth: RequestHandler = async (req, _res, next) => {
   const authReq = req as AuthRequest;
 
   try {

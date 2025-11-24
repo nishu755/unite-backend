@@ -1,5 +1,6 @@
 import twilio from 'twilio';
 import logger from '../utils/logger';
+import 'dotenv/config';
 
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -21,3 +22,5 @@ export const TWILIO_CONFIG = {
 if (twilioClient) {
   logger.info('Twilio client initialized');
 }
+
+// BJXYFVTZA4YEPA1G6FL5GXGU

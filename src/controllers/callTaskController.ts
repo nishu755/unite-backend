@@ -11,7 +11,7 @@ export class CallTaskController {
    */
   static async create(req: AuthRequest, res: Response): Promise<any | object> {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+       
       const task = await CallTaskService.createCallTask(req.body);
 
       const response: ApiResponse = {
@@ -36,7 +36,7 @@ export class CallTaskController {
     try {
       const taskId = parseInt(req.params.id);
       const agentId = req.user!.id;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const { notes, outcome } = req.body;
 
       const task = await CallTaskService.completeCallTask(
@@ -118,6 +118,8 @@ export class CallTaskController {
   static async getPending(req: AuthRequest, res: Response): Promise<any | object> {
     try {
       const agentId = req.user!.id;
+      console.log(agentId,"agentId");
+      
 
       const tasks = await CallTaskService.getPendingTasks(agentId);
 
@@ -199,7 +201,7 @@ export class CallTaskController {
       const agentId = parseInt(req.params.agentId);
       const { startDate, endDate } = req.query;
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const stats = await CallTaskService.getAgentTaskStats(
         agentId,
         startDate as string,
@@ -208,7 +210,7 @@ export class CallTaskController {
 
       const response: ApiResponse = {
         success: true,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         data: stats,
         correlationId: req.correlationId
       };

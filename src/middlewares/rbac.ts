@@ -9,7 +9,7 @@ import { ForbiddenError } from '../utils/errors';
  */
 export const authorize =
   (...allowedRoles: UserRole[]): RequestHandler =>
-  (req, res, next) => {
+  (req, _res, next) => {
     const authReq = req as AuthRequest;
 
     try {
@@ -39,7 +39,7 @@ export const isAdminOrManager: RequestHandler = authorize(UserRole.ADMIN, UserRo
  * Allow all authenticated users
  * (exported as RequestHandler and casts internally)
  */
-export const isAuthenticated: RequestHandler = (req, res, next) => {
+export const isAuthenticated: RequestHandler = (req, _res, next) => {
   const authReq = req as AuthRequest;
 
   if (!authReq.user) {

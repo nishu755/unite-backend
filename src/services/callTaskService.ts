@@ -65,7 +65,7 @@ export class CallTaskService {
     agentId: number,
     notes: string,
     outcome: string
-  ): Promise<ICallTask> {  // ✅ Fixed
+  ): Promise<ICallTask> {
     // Validate task exists
     const task = await CallTaskModel.findById(taskId);
     if (!task) {
@@ -119,7 +119,7 @@ export class CallTaskService {
   /**
    * Mark task as missed
    */
-  static async markTaskAsMissed(taskId: number): Promise<ICallTask> {  // ✅ Fixed
+  static async markTaskAsMissed(taskId: number): Promise<ICallTask> {
     const task = await CallTaskModel.findById(taskId);
     if (!task) {
       throw new NotFoundError('Call task not found');
@@ -129,7 +129,7 @@ export class CallTaskService {
       throw new ValidationError('Task is not pending');
     }
 
-    const success = await CallTaskModel.markAsMissed(taskId);  // ✅ Fixed - only taskId
+    const success = await CallTaskModel.markAsMissed(taskId);
     if (!success) {
       throw new Error('Failed to mark task as missed');
     }
@@ -175,21 +175,21 @@ export class CallTaskService {
   /**
    * Get pending tasks for an agent
    */
-  static async getPendingTasks(agentId: number): Promise<ICallTask[]> {  // ✅ Fixed
+  static async getPendingTasks(agentId: number): Promise<ICallTask[]> {
     return await CallTaskModel.getTodaysTasks(agentId);
   }
 
   /**
    * Get overdue tasks
    */
-  static async getOverdueTasks(agentId?: number): Promise<ICallTask[]> {  // ✅ Fixed
+  static async getOverdueTasks(_agentId?: number): Promise<ICallTask[]> {
     return await CallTaskModel.getOverdueTasks();
   }
 
   /**
    * Get task by ID with details
    */
-  static async getTaskWithDetails(taskId: number): Promise<ICallTask | null> {  // ✅ Fixed
+  static async getTaskWithDetails(taskId: number): Promise<ICallTask | null> {
     return await CallTaskModel.findById(taskId);
   }
 
@@ -200,7 +200,7 @@ export class CallTaskService {
     task: ICallTask,
     lead: any,
     agent: any
-  ): Promise<void> {  // ✅ Fixed
+  ): Promise<void> {
     // Send SNS notification
     await SNSService.notifyTaskAssignment({
       taskId: task.id,
@@ -230,7 +230,7 @@ export class CallTaskService {
     lead: any,
     agent: any,
     outcome: string
-  ): Promise<void> {  // ✅ Fixed
+  ): Promise<void> {
     // Send SNS notification
     await SNSService.notifyTaskCompletion({
       taskId: task.id,
@@ -247,7 +247,7 @@ export class CallTaskService {
     task: ICallTask,
     notes: string,
     outcome: string
-  ): Promise<void> {  // ✅ Fixed
+  ): Promise<void> {
     await CallLog.create({
       call_task_id: task.id,
       lead_id: task.lead_id,
@@ -272,7 +272,7 @@ export class CallTaskService {
     agentId: number,
     startDate: string,
     endDate: string
-  ): Promise<any> {  // ✅ Fixed (or use AgentTaskStats type)
+  ): Promise<any> {
     const cacheKey = `call_tasks:stats:${agentId}:${startDate}:${endDate}`;
     const cached = await cacheService.get(cacheKey);
     if (cached) {

@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise';
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
+import 'dotenv/config';
 
 
 // MySQL Connection Pool
@@ -10,7 +11,7 @@ export const createMySQLPool = () => {
     port: parseInt(process.env.DB_PORT || '3306'),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || 'Nishant@123',
-    database: process.env.DB_NAME,
+    database: process.env.DB_NAME || 'unite_db',
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10'),
     waitForConnections: true,
     queueLimit: 0,
