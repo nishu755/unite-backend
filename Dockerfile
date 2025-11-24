@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile
-FROM node:18-alpine AS builder
+# Multi-stage Dockerfile with Node.js 22
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src ./src
 RUN npx tsc --project tsconfig.json
 
 # Production stage
-FROM node:18-alpine
+FROM node:22-alpine
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -31,8 +31,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production && \
+# Install ALL dependencies (not just production)
+RUN npm ci && \
     npm cache clean --force
 
 # Copy built application from builder stage
