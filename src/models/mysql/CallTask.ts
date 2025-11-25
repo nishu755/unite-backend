@@ -115,18 +115,19 @@ export class CallTaskModel {
     static async getDailySummary(date: string): Promise<DailyTaskSummary[]> {
         const [rows] = await mysqlPool.execute<RowDataPacket[]>(
             `SELECT 
-        DATE(created_at) as date,
-        COUNT(*) as total_calls,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-        SUM(CASE WHEN status = 'missed' THEN 1 ELSE 0 END) as missed,
-        agent_id
-       FROM call_tasks
-       WHERE DATE(created_at) = ?
-       GROUP BY agent_id`,
+            DATE(created_at) AS date,
+            agent_id,
+            COUNT(*) AS total_calls,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+            SUM(CASE WHEN status = 'missed' THEN 1 ELSE 0 END) AS missed
+        FROM call_tasks
+        WHERE DATE(created_at) = ?
+        GROUP BY DATE(created_at), agent_id`,
             [date]
         );
         return rows as DailyTaskSummary[];
     }
+
 
     /**
      * Get agent statistics for a date range

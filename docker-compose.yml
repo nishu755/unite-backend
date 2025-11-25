@@ -11,7 +11,7 @@ services:
       MYSQL_USER: unite_user
       MYSQL_PASSWORD: unite_password
     ports:
-      - "3307:3306"  # FIXED: was 3307:3308
+      - "3307:3306"  
     volumes:
       - mysql_data:/var/lib/mysql
       - ./src/script/init-mysql.sql:/docker-entrypoint-initdb.d/init.sql
