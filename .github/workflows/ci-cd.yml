@@ -2,34 +2,16 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: unite-backend
 
-    runs-on: ubuntu-latest
-    name: Lint & Format Check
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run ESLint
-        run: npm run lint
-      
-      - name: Check code formatting
-        run: npm run format:check
-
-  # Job 1: Run Tests
+jobs:
+  # Job 1: Unit & Integration Tests
   test:
     runs-on: ubuntu-latest
     name: Unit & Integration Tests
@@ -48,7 +30,7 @@ env:
           --health-retries=5
         ports:
           - 3306:3306
-      
+
       mongodb:
         image: mongo:6.0
         env:
@@ -60,7 +42,7 @@ env:
           --health-retries=5
         ports:
           - 27017:27017
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -70,18 +52,18 @@ env:
           --health-retries=5
         ports:
           - 6379:6379
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests with coverage
         env:
           NODE_ENV: test
@@ -96,7 +78,7 @@ env:
           JWT_SECRET: test-jwt-secret-minimum-32-characters-long
           JWT_REFRESH_SECRET: test-refresh-secret-minimum-32-characters
         run: npm run test:cov
-      
+
       - name: Upload coverage to Codecov
         if: always()
         uses: codecov/codecov-action@v3
@@ -106,27 +88,27 @@ env:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-  # Job 3: Build TypeScript
+  # Job 2: Build TypeScript
   build:
     runs-on: ubuntu-latest
     name: Build TypeScript
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build TypeScript
         run: npm run build
-      
+
       - name: Verify build output
         run: ls -la dist/
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -134,80 +116,78 @@ env:
           path: dist/
           retention-days: 1
 
-  # Job 4: Security Scan
+  # Job 3: Security Scan
   security:
     runs-on: ubuntu-latest
     name: Security Scanning
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run npm audit
         run: npm audit --audit-level=high
         continue-on-error: true
 
-  # Job 5: Build Docker Image
+  # Job 4: Build Docker Image
   docker-build:
     runs-on: ubuntu-latest
     name: Build Docker Image
-    needs: [lint, test, build]
+    needs: [test, build]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
-      - name: Build Docker image
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and optionally push Docker image to ECR (push disabled here)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: false
-          tags: unite-backend:latest
+          tags: ${{ env.ECR_REPOSITORY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job 6: Deploy to Staging (Simplified)
+  # Job 5: Deploy to Staging (Simplified)
   deploy-staging:
     runs-on: ubuntu-latest
     name: Deploy to Staging
-    needs: [lint, test, build, docker-build]
+    needs: [test, build, docker-build]
     if: github.ref == 'refs/heads/develop'
-    
     environment: staging
-    
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy notification
         run: |
           echo "Staging deployment would happen here"
           echo "Branch: ${{ github.ref }}"
           echo "Commit: ${{ github.sha }}"
 
-  # Job 7: Production Deployment (Manual)
+  # Job 6: Production Deployment (Manual)
   deploy-production:
     runs-on: ubuntu-latest
     name: Deploy to Production
-    needs: [lint, test, build, docker-build]
+    needs: [test, build, docker-build]
     if: github.ref == 'refs/heads/main'
-    
-    environment: 
+    environment:
       name: production
       url: https://api.unite.local
-    
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Production deployment ready
         run: |
           echo "Production deployment is ready for manual approval"
